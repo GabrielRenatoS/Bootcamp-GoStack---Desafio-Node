@@ -13,9 +13,9 @@ const repositories = [];
 function RepositoryTitleInUse(request, response, next) {
   const { title } = request.body;
 
-  const repositoryId = repositories.findIndex(repository => repository.title === title);
+  const repositoryId = repositories.find(repository => repository.title === title);
 
-  if (repositoryId >= 0) {
+  if (repositoryId < 0) {
     return response.status(400).json({ error : "Repository title already in use."})
   }
 
@@ -25,7 +25,7 @@ function RepositoryTitleInUse(request, response, next) {
 function RepositoryUrlInUse(request, response, next) {
   const { url } = request.body;
 
-  const repositoryId = repositories.findIndex(repository => repository.url === url);
+  const repositoryId = repositories.find(repository => repository.url === url);
 
   if (repositoryId >= 0) {
     return response.status(400).json({ error : "Repository url already in use."})
@@ -58,7 +58,7 @@ app.post("/repositories", RepositoryTitleInUse, RepositoryUrlInUse, (request, re
     title,
     url,
     techs,
-    likes: 0,
+    likes: 0
   };
 
   repositories.push(repository);
@@ -70,17 +70,21 @@ app.put("/repositories/:id", RepositoryExist, (request, response) => {
   const { id } = request.params;
   const { title, url, techs } = request.body;
 
-  //const repositoryId = repositories.findIndex(repository => repository.id === id); 
+  const repositoryId = repositories.findIndex(repository => repository.id === id); 
 
   const repository = {
     id,
     title,
     url,
     techs,
-    likes: repositories[id].likes
+    likes: repositories[repositoryId].likes
   };
 
-  repositories[id] = repository;
+  repositories[repositoryId].title = title;
+  repositories[repositoryId].url = url;
+  repositories[repositoryId].techs = techs;
+
+  //repositories[repositoryId] = repository;
 
 
   return response.json(repository);
@@ -90,10 +94,10 @@ app.put("/repositories/:id", RepositoryExist, (request, response) => {
 app.delete("/repositories/:id", RepositoryExist, (request, response) => {
   const { id } = request.params;
 
-  //const repositoryId = repositories.findIndex(repository => repository.id === id);
+  const repositoryId = repositories.findIndex(repository => repository.id === id);
 
 
-  repositories.splice(id, 1);
+  repositories.splice(repositoryId, 1);
 
   return response.status(204).send();
 });
@@ -101,7 +105,7 @@ app.delete("/repositories/:id", RepositoryExist, (request, response) => {
 app.post("/repositories/:id/like", RepositoryExist, (request, response) => {
   const { id } = request.params;
 
-  const repositoryId = repositories.findIndex(repository => repository.id == id);  
+  const repositoryId = repositories.findIndex(repository => repository.id === id);  
 
   repositories[repositoryId].likes += 1;
 
