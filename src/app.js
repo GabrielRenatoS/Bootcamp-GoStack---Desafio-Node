@@ -10,37 +10,37 @@ app.use(cors());
 
 const repositories = [];
 
-function ProjectTitleInUse(request, response, next) {
+function RepositoryTitleInUse(request, response, next) {
   const { title } = request.body;
 
-  const projectId = repositories.findIndex(project => project.title === title);
+  const repositoryId = repositories.findIndex(repository => repository.title === title);
 
-  if (projectId >= 0) {
-    return response.status(400).json({ error : "Project title already in use."})
+  if (repositoryId >= 0) {
+    return response.status(400).json({ error : "Repository title already in use."})
   }
 
   return next();
 }
 
-function ProjectUrlInUse(request, response, next) {
+function RepositoryUrlInUse(request, response, next) {
   const { url } = request.body;
 
-  const projectId = repositories.findIndex(project => project.url === url);
+  const repositoryId = repositories.findIndex(repository => repository.url === url);
 
-  if (projectId >= 0) {
-    return response.status(400).json({ error : "Project url already in use."})
+  if (repositoryId >= 0) {
+    return response.status(400).json({ error : "Repository url already in use."})
   }
 
   return next();
 }
 
-function ProjectExist(request, response, next) {
+function RepositoryExist(request, response, next) {
   const { id } = request.params;
 
-  const projectId = repositories.findIndex(project => project.id === id);
+  const repositoryId = repositories.findIndex(repository => repository.id === id);
 
-  if (projectId < 0) {
-    return response.status(400).json({ error : "Project not found."})
+  if (repositoryId < 0) {
+    return response.status(400).json({ error : "Repository not found."})
   }
 
   return next();
@@ -50,62 +50,62 @@ app.get("/repositories", (request, response) => {
   return response.json(repositories);
 });
 
-app.post("/repositories", ProjectTitleInUse, ProjectUrlInUse, (request, response) => {
+app.post("/repositories", RepositoryTitleInUse, RepositoryUrlInUse, (request, response) => {
   const { title, url, techs } = request.body;
-  const likes = 0;
 
-  const project = {
+  const repository = {
     id: uuid(),
     title,
     url,
     techs,
-    likes
+    likes: 0,
   };
 
-  repositories.push(project);
+  repositories.push(repository);
 
-  return response.json(project);
+  return response.json(repository);
 });
 
-app.put("/repositories/:id", ProjectExist, (request, response) => {
+app.put("/repositories/:id", RepositoryExist, (request, response) => {
   const { id } = request.params;
   const { title, url, techs } = request.body;
 
-  const projectId = repositories.findIndex(project => project.id === id); 
+  //const repositoryId = repositories.findIndex(repository => repository.id === id); 
 
-  const project = {
+  const repository = {
     id,
     title,
     url,
     techs,
-    likes: repositories[projectId].likes
+    likes: repositories[id].likes
   };
 
-  repositories[projectId] = project;
+  repositories[id] = repository;
 
 
-  return response.json(project);
+  return response.json(repository);
 
 });
 
-app.delete("/repositories/:id", ProjectExist, (request, response) => {
+app.delete("/repositories/:id", RepositoryExist, (request, response) => {
   const { id } = request.params;
 
-  const projectId = repositories.findIndex(project => project.id == id);
+  //const repositoryId = repositories.findIndex(repository => repository.id === id);
 
-  repositories.splice(projectId, 1);
+
+  repositories.splice(id, 1);
 
   return response.status(204).send();
 });
 
-app.post("/repositories/:id/like", ProjectExist, (request, response) => {
+app.post("/repositories/:id/like", RepositoryExist, (request, response) => {
   const { id } = request.params;
 
-  const projectId = repositories.findIndex(project => project.id == id);  
+  const repositoryId = repositories.findIndex(repository => repository.id == id);  
 
-  repositories[projectId].likes += 1;
+  repositories[repositoryId].likes += 1;
 
-  return response.json(repositories[projectId]);
+  return response.json(repositories[repositoryId]);
 });
 
 module.exports = app;
